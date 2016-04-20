@@ -22,6 +22,7 @@
 // E end
 // C cycle length
 // P load preset
+// ? show program
 
 #include <SoftPWM.h>
 
@@ -64,7 +65,7 @@ void setup() {
 
 void loop() {
   if ( (loops != 0) && run) {
-    if (loops>9998) { loops--; }
+    if (loops<9999) { loops--; }
     pointer++;
     if (pointer >= steps) {pointer = 0;}
     Serial.println(pointer);
@@ -107,6 +108,8 @@ void serialEvent() {
 void processInput() {
   if (inputString.length() > 0 && inputString[0]=='E') { run = false; serialOK(); }
   if (inputString.length() > 0 && inputString[0]=='S') { run = true;  serialOK(); }
+
+  if (inputString.length() > 0 && inputString[0]=='?') { showProgram(); }
 
   if (inputString[0]=='L' && inputString.length() > 1) {
      loops = inputString.substring(1).toInt();
@@ -209,3 +212,27 @@ void preset(byte presetNo) {
   }
 }
 
+void showProgram() {
+  Serial.write("Red:   ");
+  for (int i = 0; i < 8; i++) { Serial.print(intensityR[i]); Serial.write(',');; }
+  Serial.println(); 
+  Serial.write("Green: ");
+  for (int i = 0; i < 8; i++) { Serial.print(intensityG[i]); Serial.write(','); }
+  Serial.println(); 
+  Serial.write("Blue:  ");
+  for (int i = 0; i < 8; i++) { Serial.print(intensityB[i]); Serial.write(','); }
+  Serial.println(); 
+  Serial.write("Fade:  ");
+  for (int i = 0; i < 8; i++) { Serial.print(fade[i]); Serial.write(','); }
+  Serial.println(); 
+
+  Serial.write("Steps: ");
+  Serial.println(steps);
+
+  Serial.write("Loops: ");
+  Serial.println(loops);
+
+  Serial.print("Prg is ");
+  if (!run) {Serial.print("not");}
+  Serial.println(" running.");
+}
