@@ -1,4 +1,3 @@
-
 //    This is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
 //    the Free Software Foundation, either version 3 of the License, or
@@ -30,9 +29,22 @@
 #define GREEN 3
 #define BLUE 4
 
-byte intensityR[8] = {0, 255, 0, 255, 0, 255, 0, 255};
-byte intensityG[8] = {255, 0, 255, 0, 255, 0, 255, 0};
-byte intensityB[8] = {0, 0, 255, 255, 0, 0, 255, 255};
+// COMMON_CATHODE for common GND on RGB diode
+// COMMON_ANODE   for common VCC on RGB diode
+
+//#define COMMON_CATHODE
+#define COMMON_ANODE
+
+#ifdef COMMON_CATHODE
+  #ifdef COMMON_ANODE
+    #error "COMMON_CATHODE and COMMON_ANODE cannot be defined together."
+  #endif
+#endif
+
+
+byte intensityR[8] = {  0, 255,   0, 255,   0, 255,   0, 255};
+byte intensityG[8] = {255,   0, 255,   0, 255,   0, 255,   0};
+byte intensityB[8] = {  0,   0, 255, 255,   0,   0, 255, 255};
 
 int fade[8] = {2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000};
 
@@ -51,14 +63,19 @@ String inputString;
 void setup() {
   Serial.begin(9600);
 
-  SoftPWMBegin();
+  #ifdef COMMON_CATHODE
+    SoftPWMBegin(SOFTPWM_NORMAL);
+  #endif  
+  #ifdef COMMON_ANODE
+    SoftPWMBegin(SOFTPWM_INVERTED);
+  #endif  
   SoftPWMSet(RED,   intensityR[0]);
   SoftPWMSet(GREEN, intensityG[0]);
   SoftPWMSet(BLUE,  intensityB[0]);
 
-  SoftPWMSetFadeTime(RED, fade[0], fade[0]);
+  SoftPWMSetFadeTime(RED,   fade[0], fade[0]);
   SoftPWMSetFadeTime(GREEN, fade[0], fade[0]);
-  SoftPWMSetFadeTime(BLUE, fade[0], fade[0]);
+  SoftPWMSetFadeTime(BLUE,  fade[0], fade[0]);
 
   delay(fade[0]);
 }
@@ -70,9 +87,9 @@ void loop() {
     if (pointer >= steps) {pointer = 0;}
     Serial.println(pointer);
 
-    SoftPWMSetFadeTime(RED, fade[pointer], fade[pointer]);
+    SoftPWMSetFadeTime(RED,   fade[pointer], fade[pointer]);
     SoftPWMSetFadeTime(GREEN, fade[pointer], fade[pointer]);
-    SoftPWMSetFadeTime(BLUE, fade[pointer], fade[pointer]);
+    SoftPWMSetFadeTime(BLUE,  fade[pointer], fade[pointer]);
 
     SoftPWMSet(RED,   intensityR[pointer]);
     SoftPWMSet(GREEN, intensityG[pointer]);
